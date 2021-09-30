@@ -302,10 +302,11 @@ const ProducerPage = (props) => {
                   onChange={handleChange}
                   placeholder=""
                 >
-                  <option>-select-</option>
-                  <option>sdfs</option>
-                  <option>sdfs</option>
-                  <option>sdfs</option>
+                  <option>-Select-</option>
+                  <option value="1-5">1-5</option>
+                  <option value="6-10">6-10</option>
+                  <option value="11-20">11-20</option>
+                  <option value="20+">20+</option>
                 </Select>
               </FormControl>
               <FormControl
@@ -326,10 +327,9 @@ const ProducerPage = (props) => {
                   onChange={handleChange}
                   placeholder=""
                 >
-                  <option>-select-</option>
-                  <option>sdfs</option>
-                  <option>sdfs</option>
-                  <option>sdfs</option>
+                  <option>-Select-</option>
+                  <option value="10-20">10-20</option>
+                  <option value="20+">20+</option>
                 </Select>
               </FormControl>
             </Box>
