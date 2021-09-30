@@ -42,6 +42,10 @@ const ProducerPage = (props) => {
     validationSchema: Yup.object({
       fullName: Yup.string().required("Required"),
       email: Yup.string().email("Invalid email").required("Required"),
+      phone_number: Yup.string().matches(
+        /^[0-9-()\s]+$/,
+        "Only Numbers and -,(,) are allowed "
+      ),
     }),
 
     onSubmit: async (values, helpers) => {
@@ -159,6 +163,7 @@ const ProducerPage = (props) => {
                     {...inputTextStyleProps}
                     type="text"
                     width="70px"
+                    defaultValue="+1"
                     onBlur={handleBlur}
                     value={values.country_code}
                     onChange={(e) => {
@@ -177,6 +182,9 @@ const ProducerPage = (props) => {
                     placeholder="e.g. 1234567891"
                   />
                 </HStack>
+                {formik.touched.phone_number && formik.errors.phone_number ? (
+                  <Box className="error">{formik.errors.phone_number}</Box>
+                ) : null}
               </FormControl>
             </Box>
             <Box

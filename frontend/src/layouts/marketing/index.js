@@ -45,6 +45,10 @@ const MarketingPage = (props) => {
       companyName: Yup.string().required("Required"),
       contactName: Yup.string().required("Required"),
       contactEmail: Yup.string().email("Invalid email").required("Required"),
+      phone_number: Yup.string().matches(
+        /^[0-9-()\s]+$/,
+        "Only Numbers and -,(,) are allowed "
+      ),
     }),
 
     onSubmit: async (values, helpers) => {
@@ -184,6 +188,7 @@ const MarketingPage = (props) => {
                     {...inputTextStyleProps}
                     type="text"
                     width="70px"
+                    defaultValue="+1"
                     value={values.country_code}
                     onChange={(e) => {
                       setFieldValue("country_code", e.target.value);
@@ -200,6 +205,9 @@ const MarketingPage = (props) => {
                     placeholder="e.g. 1234567891"
                   />
                 </HStack>
+                {formik.touched.phone_number && formik.errors.phone_number ? (
+                  <Box className="error">{formik.errors.phone_number}</Box>
+                ) : null}
               </FormControl>
               <FormControl id="" mr="10">
                 <FormLabel>Address Line 1</FormLabel>
