@@ -28,27 +28,64 @@ import {
   inputTextStyleProps,
 } from "../../utils/stylesProps";
 import { stateOptions } from "../../utils/states";
+import { API } from "aws-amplify";
+import { createBusinessContact } from "../../graphql/mutations";
+import awsmobile from "../../aws-exports";
 
 const MarketingPage = (props) => {
   const [initialSupplyAbility, setInitialSupplyAbility] = useState("0");
+  const [submitLoading, setSubmitLoading] = useState(false);
   const formik = useFormik({
     initialValues: {
-      businessName: "",
-      contactPerson: "",
-      email: "",
+      companyName: "",
+      contactName: "",
+      contactEmail: "",
     },
     validationSchema: Yup.object({
-      businessName: Yup.string().required("Required"),
-      contactPerson: Yup.string().required("Required"),
-      email: Yup.string().email("Invalid email").required("Required"),
+      companyName: Yup.string().required("Required"),
+      contactName: Yup.string().required("Required"),
+      contactEmail: Yup.string().email("Invalid email").required("Required"),
     }),
 
     onSubmit: async (values, helpers) => {
+      setSubmitLoading(true);
       values.phoneNumber = values.country_code + "" + values.phone_number;
       delete values.country_code;
       delete values.phone_number;
       console.log(values);
-      // navigate("/success");
+
+      try {
+        const data = await API.graphql({
+          query: createBusinessContact,
+          variables: {
+            input: {
+              contactType: "Marketing Agency",
+              companyName: values.companyName,
+              contactName: values.contactName,
+              contactEmail: values.contactEmail,
+              contactPhoneNumber: values.phoneNumber,
+              billingAddress: {
+                addrLine1: values.addrLine1,
+                addrLine2: values.addrLine2,
+              },
+              moreAboutAgency1: values.sellingTechExp,
+              moreAboutAgency2: values.initialSupplyAbility,
+              moreAboutAgency3: values.potentialStates,
+              moreAboutAgency4: values.changeManagementExp,
+              moreAboutAgency5: values.revenueShareModel,
+              additionalDetails: values.details,
+            },
+          },
+          authMode: "API_KEY",
+          authToken: awsmobile.aws_appsync_apiKey,
+        });
+        console.log(data);
+
+        navigate("/success");
+      } catch (err) {
+        console.log(err);
+      }
+      setSubmitLoading(false);
     },
   });
 
@@ -93,14 +130,14 @@ const MarketingPage = (props) => {
                 <Input
                   {...inputTextStyleProps}
                   type="text"
-                  name="businessName"
+                  name="companyName"
                   onBlur={handleBlur}
-                  value={values.businessName}
+                  value={values.companyName}
                   onChange={handleChange}
                   placeholder="Name of Business"
                 />
-                {formik.touched.businessName && formik.errors.businessName ? (
-                  <Box className="error">{formik.errors.businessName}</Box>
+                {formik.touched.companyName && formik.errors.companyName ? (
+                  <Box className="error">{formik.errors.companyName}</Box>
                 ) : null}
               </FormControl>
               <FormControl id="" isRequired mr="10">
@@ -108,14 +145,14 @@ const MarketingPage = (props) => {
                 <Input
                   {...inputTextStyleProps}
                   type="text"
-                  name="contactPerson"
+                  name="contactName"
                   onBlur={handleBlur}
-                  value={values.contactPerson}
+                  value={values.contactName}
                   onChange={handleChange}
                   placeholder="Contact Person"
                 />
-                {formik.touched.contactPerson && formik.errors.contactPerson ? (
-                  <Box className="error">{formik.errors.contactPerson}</Box>
+                {formik.touched.contactName && formik.errors.contactName ? (
+                  <Box className="error">{formik.errors.contactName}</Box>
                 ) : null}
               </FormControl>
               <FormControl id="" isRequired>
@@ -123,14 +160,14 @@ const MarketingPage = (props) => {
                 <Input
                   {...inputTextStyleProps}
                   type="text"
-                  name="email"
+                  name="contactEmail"
                   onBlur={handleBlur}
-                  value={values.email}
+                  value={values.contactEmail}
                   onChange={handleChange}
                   placeholder="EmailId"
                 />{" "}
-                {formik.touched.email && formik.errors.email ? (
-                  <Box className="error">{formik.errors.email}</Box>
+                {formik.touched.contactEmail && formik.errors.contactEmail ? (
+                  <Box className="error">{formik.errors.contactEmail}</Box>
                 ) : null}
               </FormControl>
             </Box>
@@ -165,7 +202,7 @@ const MarketingPage = (props) => {
                 </HStack>
               </FormControl>
               <FormControl id="" mr="10">
-                <FormLabel>Addres Line 1</FormLabel>
+                <FormLabel>Address Line 1</FormLabel>
                 <Input
                   {...inputTextStyleProps}
                   type="text"
@@ -177,7 +214,7 @@ const MarketingPage = (props) => {
                 />
               </FormControl>
               <FormControl id="">
-                <FormLabel>Addres Line 2</FormLabel>
+                <FormLabel>Address Line 2</FormLabel>
                 <Input
                   {...inputTextStyleProps}
                   type="text"
@@ -267,26 +304,6 @@ const MarketingPage = (props) => {
               <FormControl
                 display={{ base: "block", md: "flex" }}
                 alignItems="baseline"
-              >
-                <FormLabel w={{ base: "100%", md: "40%" }}>
-                  Prior experience in change management with fragmented sellers
-                </FormLabel>
-                <RadioGroup
-                  defaultValue="1"
-                  mt="3"
-                  onChange={(event) => {
-                    setFieldValue("changeManagementExp", event);
-                  }}
-                >
-                  <Radio value="Yes">Yes</Radio>
-                  <Radio value="No" ml="5">
-                    No
-                  </Radio>
-                </RadioGroup>
-              </FormControl>
-              <FormControl
-                display={{ base: "block", md: "flex" }}
-                alignItems="baseline"
                 mt="5"
               >
                 <FormLabel w={{ base: "100%", md: "40%" }}>
@@ -305,6 +322,26 @@ const MarketingPage = (props) => {
                     }}
                   />
                 </Box>
+              </FormControl>
+              <FormControl
+                display={{ base: "block", md: "flex" }}
+                alignItems="baseline"
+              >
+                <FormLabel w={{ base: "100%", md: "40%" }}>
+                  Prior experience in change management with fragmented sellers
+                </FormLabel>
+                <RadioGroup
+                  defaultValue="1"
+                  mt="3"
+                  onChange={(event) => {
+                    setFieldValue("changeManagementExp", event);
+                  }}
+                >
+                  <Radio value="Yes">Yes</Radio>
+                  <Radio value="No" ml="5">
+                    No
+                  </Radio>
+                </RadioGroup>
               </FormControl>
               <FormControl
                 display={{ base: "block", md: "flex" }}
@@ -362,6 +399,7 @@ const MarketingPage = (props) => {
               mr="10px"
               color="white"
               type="submit"
+              isLoading={submitLoading}
               fontWeight="bold"
               fontSize="14px"
               _hover={{ background: "brand.red" }}

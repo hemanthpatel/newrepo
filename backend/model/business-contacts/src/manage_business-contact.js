@@ -31,11 +31,9 @@ exports.handler = async function (event, context, callback) {
 /**************************************************************
  * Create BusinessContact
  **************************************************************/
-createBusinessContact = async (body, identity) => {
+createBusinessContact = async (body) => {
   const id = nanoid();
-  const userName = identity;
   body.input["id"] = id;
-  body.input["ownerId"] = userName;
   const params = {
     TableName: process.env.TABLE_NAME,
     Item: body.input,

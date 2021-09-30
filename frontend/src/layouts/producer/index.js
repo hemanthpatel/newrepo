@@ -26,10 +26,14 @@ import {
 } from "../../utils/stylesProps";
 import * as Yup from "yup";
 import { stateOptions } from "../../utils/states";
+import { API } from "aws-amplify";
+import { createBusinessContact } from "../../graphql/mutations";
+import awsmobile from "../../aws-exports";
 
 const ProducerPage = (props) => {
   const [liquorFamiliarity, setLiquorFamiliarity] = useState("0");
   const [techAbility, setTechAbility] = useState("0");
+  const [submitLoading, setSubmitLoading] = useState(false);
   const formik = useFormik({
     initialValues: {
       fullName: "",
@@ -41,11 +45,44 @@ const ProducerPage = (props) => {
     }),
 
     onSubmit: async (values, helpers) => {
+      setSubmitLoading(true);
       values.phoneNumber = values.country_code + "" + values.phone_number;
       delete values.country_code;
       delete values.phone_number;
       console.log(values);
-      navigate("/success");
+
+      try {
+        const data = await API.graphql({
+          query: createBusinessContact,
+          variables: {
+            input: {
+              contactType: "Producer",
+              contactName: values.fullName,
+              contactEmail: values.email,
+              contactPhoneNumber: values.phoneNumber,
+              billingAddress: {
+                addrLine1: values.addrLine1,
+                addrLine2: values.addrLine2,
+              },
+              moreAboutProducer1: values.liquorFamiliarity,
+              moreAboutProducer2: values.techAbility,
+              moreAboutProducer3: values.potentialStates,
+              moreAboutProducer4: values.merchantCount,
+              moreAboutProducer5: values.hoursPerWeek,
+            },
+          },
+          authMode: "API_KEY",
+          authToken: awsmobile.aws_appsync_apiKey,
+        });
+
+        console.log(data);
+
+        navigate("/success");
+      } catch (err) {
+        console.log(err);
+      }
+
+      setSubmitLoading(false);
     },
   });
 
@@ -315,7 +352,7 @@ const ProducerPage = (props) => {
                 mt="5"
               >
                 <FormLabel w={{ base: "100%", md: "40%" }}>
-                  Readliness to commit number of hrs / week
+                  Readiness to commit number of hrs / week
                 </FormLabel>
                 <Select
                   w={{ base: "100%", md: "40%" }}
@@ -367,6 +404,7 @@ const ProducerPage = (props) => {
               mr="10px"
               color="white"
               type="submit"
+              isLoading={submitLoading}
               fontWeight="bold"
               fontSize="14px"
               _hover={{ background: "brand.red" }}

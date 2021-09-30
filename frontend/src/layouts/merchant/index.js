@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { useFormik } from "formik";
 import { navigate } from "@reach/router";
-import React from "react";
+import React, { useState } from "react";
 import * as Yup from "yup";
 import Select from "react-select";
 import {
@@ -23,25 +23,69 @@ import {
   inputTextStyleProps,
 } from "../../utils/stylesProps";
 import { stateOptions } from "../../utils/states";
+import { createBusinessContact } from "../../graphql/mutations";
+import { API } from "aws-amplify";
+import awsmobile from "../../aws-exports";
 
 const MerchantPage = (props) => {
+  const [submitLoading, setSubmitLoading] = useState(false);
+
   const formik = useFormik({
     initialValues: {
-      businessName: "",
-      contactPerson: "",
-      email: "",
+      companyName: "",
+      contactName: "",
+      contactEmail: "",
     },
     validationSchema: Yup.object({
-      businessName: Yup.string().required("Required"),
-      contactPerson: Yup.string().required("Required"),
-      email: Yup.string().email("Invalid email").required("Required"),
+      companyName: Yup.string().required("Required"),
+      contactName: Yup.string().required("Required"),
+      contactEmail: Yup.string().email("Invalid email").required("Required"),
     }),
     onSubmit: async (values, helpers) => {
-      values.phoneNumber = values.country_code + "" + values.phone_number;
+      setSubmitLoading(true);
+      values.contactPhoneNumber =
+        values.country_code + "" + values.phone_number;
+
       delete values.country_code;
       delete values.phone_number;
+
       console.log(values);
-      navigate("/success");
+
+      try {
+        const data = await API.graphql({
+          query: createBusinessContact,
+          variables: {
+            input: {
+              contactType: "Merchant",
+              companyName: values.companyName,
+              contactName: values.contactName,
+              contactEmail: values.contactEmail,
+              contactPhoneNumber: values.contactPhoneNumber,
+              billingAddress: {
+                addrLine1: values.addrLine1,
+                addrLine2: values.addrLine2,
+              },
+              moreAboutMerchant1: values.establishYear,
+              moreAboutMerchant2: values.storesCount,
+              moreAboutMerchant3: values.presenceStates,
+              moreAboutMerchant4: values.deliveryWebsite,
+              moreAboutMerchant5: values.deliveryMobile,
+              additionalDetails: values.details,
+            },
+          },
+          authMode: "API_KEY",
+          authToken: awsmobile.aws_appsync_apiKey,
+        });
+
+        console.log(data);
+
+        navigate("/success");
+      } catch (err) {
+        console.log(err);
+      }
+
+      setSubmitLoading(false);
+      helpers.resetForm();
     },
   });
 
@@ -86,14 +130,14 @@ const MerchantPage = (props) => {
                 <Input
                   {...inputTextStyleProps}
                   type="text"
-                  name="businessName"
+                  name="companyName"
                   onBlur={handleBlur}
-                  value={values.businessName}
+                  value={values.companyName}
                   onChange={handleChange}
                   placeholder="Name of Business"
                 />
-                {formik.touched.businessName && formik.errors.businessName ? (
-                  <Box className="error">{formik.errors.businessName}</Box>
+                {formik.touched.companyName && formik.errors.companyName ? (
+                  <Box className="error">{formik.errors.companyName}</Box>
                 ) : null}
               </FormControl>
               <FormControl id="" isRequired mr="10">
@@ -101,14 +145,14 @@ const MerchantPage = (props) => {
                 <Input
                   {...inputTextStyleProps}
                   type="text"
-                  name="contactPerson"
+                  name="contactName"
                   onBlur={handleBlur}
-                  value={values.contactPerson}
+                  value={values.contactName}
                   onChange={handleChange}
                   placeholder="Contact Person"
                 />
-                {formik.touched.contactPerson && formik.errors.contactPerson ? (
-                  <Box className="error">{formik.errors.contactPerson}</Box>
+                {formik.touched.contactName && formik.errors.contactName ? (
+                  <Box className="error">{formik.errors.contactName}</Box>
                 ) : null}
               </FormControl>
               <FormControl id="" isRequired>
@@ -116,14 +160,14 @@ const MerchantPage = (props) => {
                 <Input
                   {...inputTextStyleProps}
                   type="text"
-                  name="email"
+                  name="contactEmail"
                   onBlur={handleBlur}
-                  value={values.email}
+                  value={values.contactEmail}
                   onChange={handleChange}
                   placeholder="EmailId"
                 />
-                {formik.touched.email && formik.errors.email ? (
-                  <Box className="error">{formik.errors.email}</Box>
+                {formik.touched.contactEmail && formik.errors.contactEmail ? (
+                  <Box className="error">{formik.errors.contactEmail}</Box>
                 ) : null}
               </FormControl>
             </Box>
@@ -158,7 +202,7 @@ const MerchantPage = (props) => {
                 </HStack>
               </FormControl>
               <FormControl id="" mr="10">
-                <FormLabel>Addres Line 1</FormLabel>
+                <FormLabel>Address Line 1</FormLabel>
                 <Input
                   {...inputTextStyleProps}
                   type="text"
@@ -170,7 +214,7 @@ const MerchantPage = (props) => {
                 />
               </FormControl>
               <FormControl id="">
-                <FormLabel>Addres Line 2</FormLabel>
+                <FormLabel>Address Line 2</FormLabel>
                 <Input
                   {...inputTextStyleProps}
                   type="text"
@@ -295,6 +339,7 @@ const MerchantPage = (props) => {
               mr="10px"
               color="white"
               type="submit"
+              isLoading={submitLoading}
               fontWeight="bold"
               fontSize="14px"
               _hover={{ background: "brand.red" }}

@@ -1,4 +1,3 @@
-
 """
 Address is type only.
 Address type will be embedded in each of the entities as required.
@@ -18,21 +17,28 @@ type Address {
 """
 Describes the creation of business contact
 """
-type BusinessContact
-  @model
-  @aws_api_key
-  {
+type BusinessContact @model @aws_api_key {
   id: ID!
-  companyName: String!
+  contactType: String!
+  companyName: String
   contactName: String!
   contactEmail: AWSEmail!
   contactPhoneNumber: String!
   billingAddress: Address
-  agencyExperience: String
-  agencyAbility: String
-  priorExperience: String
-  potentialStates: [String]
-  revenueAlignment: String
+  moreAboutMerchant1: String
+  moreAboutMerchant2: String
+  moreAboutMerchant3: String
+  moreAboutMerchant4: String
+  moreAboutMerchant5: String
+  moreAboutProducer1: String
+  moreAboutProducer2: String
+  moreAboutProducer3: String
+  moreAboutProducer4: String
+  moreAboutProducer5: String
+  moreAboutAgency1: String
+  moreAboutAgency2: String
+  moreAboutAgency3: String
+  moreAboutAgency4: String
+  moreAboutAgency5: String
   additionalDetails: String
 }
-
