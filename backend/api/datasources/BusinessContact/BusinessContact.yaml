@@ -1,0 +1,226 @@
+################################################
+# Parameters
+################################################
+Parameters:
+  Application:
+    Type: String
+  Module:
+    Type: String
+  Environment:
+    Type: String
+    Default: dev
+    Description: Environment name
+  LogLevel:
+    Type: String
+    Default: INFO
+  RetentionInDays:
+    Type: Number
+    Default: 1
+    Description: CloudWatch Logs retention period for Lambda functions
+  EventBusName:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: EventBridge Event Bus Name
+  NodeLayerArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: Node Layer NodeDependenciesLayer ARN
+  QueryLimit:
+    Type: Number
+    Default: 20
+    Description: Maximum number of items to return from a single query
+  ApiId:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: API Id
+##############################################################
+# Data Sources for BusinessContact
+##############################################################
+Resources:
+  ##########################
+  # Roles #
+  ##########################
+  ManageBusinessContactFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: appsync.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ManageBusinessContactFunctionAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Application}-${Environment}-ManageBusinessContact-Function
+
+  ##########################
+  # Manage BusinessContact #
+  ##########################
+  ManageBusinessContactDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId: !Ref ApiId
+      Name: ManageBusinessContact
+      Type: AWS_LAMBDA
+      ServiceRoleArn: !GetAtt ManageBusinessContactFunctionRole.Arn
+      LambdaConfig:
+        LambdaFunctionArn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Application}-${Environment}-ManageBusinessContact-Function
+
+  CreateBusinessContactResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !Ref ApiId
+      DataSourceName: !GetAtt ManageBusinessContactDataSource.Name
+      FieldName: createBusinessContact
+      TypeName: Mutation
+      RequestMappingTemplate: !Sub |
+        {
+          "version": "2018-05-29",
+          "operation": "Invoke",
+          "payload": {
+            "field": "createBusinessContact",
+            "identity": "$ctx.identity.username",
+            "body": $util.toJson($context.arguments)
+          }
+        }
+      ResponseMappingTemplate: |
+        $utils.toJson($ctx.result)
+
+  UpdateBusinessContactResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !Ref ApiId
+      DataSourceName: !GetAtt ManageBusinessContactDataSource.Name
+      FieldName: updateBusinessContact
+      TypeName: Mutation
+      RequestMappingTemplate: !Sub |
+        {
+          "version": "2018-05-29",
+          "operation": "Invoke",
+          "payload": {
+            "field": "updateBusinessContact",
+            "body": $util.toJson($context.arguments)
+          }
+        }
+      ResponseMappingTemplate: |
+        $utils.toJson($ctx.result)
+
+  DeleteBusinessContactResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !Ref ApiId
+      DataSourceName: !GetAtt ManageBusinessContactDataSource.Name
+      FieldName: deleteBusinessContact
+      TypeName: Mutation
+      RequestMappingTemplate: !Sub |
+        {
+          "version": "2018-05-29",
+          "operation": "Invoke",
+          "payload": {
+            "field": "deleteBusinessContact",
+            "body": $util.toJson($context.arguments)
+          }
+        }
+      ResponseMappingTemplate: |
+        $utils.toJson($ctx.result)
+
+  ########################
+  # Get BusinessContact  #
+  ########################
+  GetBusinessContactRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: appsync.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: GetBusinessContactTableAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:GetItem
+                Resource:
+                  - !Sub "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${Application}-${Environment}-BusinessContact"
+
+  BusinessContactTableDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId: !Ref ApiId
+      Name: BusinessContactTable
+      Type: AMAZON_DYNAMODB
+      ServiceRoleArn: !GetAtt GetBusinessContactRole.Arn
+      DynamoDBConfig:
+        AwsRegion: !Ref AWS::Region
+        TableName: !Sub ${Application}-${Environment}-BusinessContact
+
+  listBusinessContactsResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !Ref ApiId
+      DataSourceName: !GetAtt BusinessContactTableDataSource.Name
+      FieldName: listBusinessContacts
+      TypeName: Query
+      RequestMappingTemplate: !Sub |
+        #set( $limit = $util.defaultIfNull($context.args.limit, 100) )
+        #set( $ListRequest = {
+          "version": "2018-05-29",
+          "limit": $limit
+        } )
+        #if( $context.args.nextToken )
+          #set( $ListRequest.nextToken = $context.args.nextToken )
+        #end
+        #if( $context.args.filter )
+          #set( $ListRequest.filter = $util.parseJson("$util.transform.toDynamoDBFilterExpression($ctx.args.filter)") )
+        #end
+        #if( !$util.isNull($modelQueryExpression)
+                                && !$util.isNullOrEmpty($modelQueryExpression.expression) )
+          $util.qr($ListRequest.put("operation", "Query"))
+          $util.qr($ListRequest.put("query", $modelQueryExpression))
+          #if( !$util.isNull($ctx.args.sortDirection) && $ctx.args.sortDirection == "DESC" )
+            #set( $ListRequest.scanIndexForward = false )
+          #else
+            #set( $ListRequest.scanIndexForward = true )
+          #end
+        #else
+          $util.qr($ListRequest.put("operation", "Scan"))
+        #end
+        $util.toJson($ListRequest)
+      ResponseMappingTemplate: !Sub |
+        #if( $ctx.error )
+        $util.error($ctx.error.message, $ctx.error.type)
+        #else
+        $util.toJson($ctx.result)
+        #end
+
+  GetBusinessContactResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !Ref ApiId
+      DataSourceName: !GetAtt BusinessContactTableDataSource.Name
+      FieldName: getBusinessContact
+      TypeName: Query
+      RequestMappingTemplate: !Sub |
+        {
+          "version": "2018-05-29",
+          "operation": "GetItem",
+          "key": #if( $modelObjectKey ) $util.toJson($modelObjectKey) #else {
+          "id": $util.dynamodb.toDynamoDBJson($ctx.args.id)
+        } #end
+        }
+      ResponseMappingTemplate: |
+        #if( $ctx.error )
+        $util.error($ctx.error.message, $ctx.error.type)
+        #else
+        $util.toJson($ctx.result)
+        #end

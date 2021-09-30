@@ -1,0 +1,35 @@
+version = 0.1
+
+[dev]
+[dev.deploy]
+[dev.deploy.parameters]
+stack_name = "spirits-dev-businessops-businesscontact"
+s3_bucket = "spirits-dev-samdeploy"
+s3_prefix = "spirits-dev-businessops-businesscontact"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Application=\"spirits\" Module=\"businessops\" Environment=\"dev\" LogLevel=\"INFO\" RetentionInDays=\"30\" NodeLayerArn=\"/spirits/dev/shared/nodelayer/arn\""
+
+[dev2]
+[dev2.deploy]
+[dev2.deploy.parameters]
+stack_name = "spirits-dev2-businessops-businesscontact"
+s3_bucket = "spirits-dev-samdeploy"
+s3_prefix = "spirits-dev2-businessops-businesscontact"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Application=\"spirits\" Module=\"businessops\" Environment=\"dev2\" LogLevel=\"INFO\" RetentionInDays=\"30\" NodeLayerArn=\"/spirits/dev2/shared/nodelayer/arn\""
+
+
+[sit]
+[sit.deploy]
+[sit.deploy.parameters]
+stack_name = "spirits-sit-businessops-businesscontact"
+s3_bucket = "spirits-dev-samdeploy"
+s3_prefix = "spirits-sit-businessops-businesscontact"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Application=\"spirits\" Module=\"businessops\" Environment=\"sit\" LogLevel=\"INFO\" RetentionInDays=\"30\" NodeLayerArn=\"/spirits/sit/shared/nodelayer/arn\""

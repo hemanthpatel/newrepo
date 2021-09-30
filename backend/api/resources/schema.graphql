@@ -1,0 +1,174 @@
+"""
+Address is type only.
+Address type will be embedded in each of the entities as required.
+"""
+type Address {
+  addrLine1: String
+  addrLine2: String
+  addrLine3: String
+  city: String
+  state: String
+  country: String
+  postCode: String
+  latitude: Float
+  longitude: Float
+}
+
+"""Describes the creation of business contact"""
+type BusinessContact @aws_api_key {
+  id: ID!
+  companyName: String!
+  contactName: String!
+  contactEmail: AWSEmail!
+  contactPhoneNumber: String!
+  billingAddress: Address
+  agencyExperience: String
+  agencyAbility: String
+  priorExperience: String
+  potentialStates: [String]
+  revenueAlignment: String
+  additionalDetails: String
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+input AddressInput {
+  addrLine1: String
+  addrLine2: String
+  addrLine3: String
+  city: String
+  state: String
+  country: String
+  postCode: String
+  latitude: Float
+  longitude: Float
+}
+
+enum ModelSortDirection {
+  ASC
+  DESC
+}
+
+type ModelBusinessContactConnection {
+  items: [BusinessContact]
+  nextToken: String
+}
+
+input ModelStringFilterInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+}
+
+input ModelIDFilterInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+}
+
+input ModelIntFilterInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+}
+
+input ModelFloatFilterInput {
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  between: [Float]
+}
+
+input ModelBooleanFilterInput {
+  ne: Boolean
+  eq: Boolean
+}
+
+input ModelBusinessContactFilterInput {
+  id: ModelIDFilterInput
+  companyName: ModelStringFilterInput
+  contactName: ModelStringFilterInput
+  contactEmail: ModelStringFilterInput
+  contactPhoneNumber: ModelStringFilterInput
+  agencyExperience: ModelStringFilterInput
+  agencyAbility: ModelStringFilterInput
+  priorExperience: ModelStringFilterInput
+  potentialStates: ModelStringFilterInput
+  revenueAlignment: ModelStringFilterInput
+  additionalDetails: ModelStringFilterInput
+  and: [ModelBusinessContactFilterInput]
+  or: [ModelBusinessContactFilterInput]
+  not: ModelBusinessContactFilterInput
+}
+
+type Query {
+  getBusinessContact(id: ID!): BusinessContact
+  listBusinessContacts(filter: ModelBusinessContactFilterInput, limit: Int, nextToken: String): ModelBusinessContactConnection
+}
+
+input CreateBusinessContactInput {
+  id: ID
+  companyName: String!
+  contactName: String!
+  contactEmail: AWSEmail!
+  contactPhoneNumber: String!
+  billingAddress: AddressInput
+  agencyExperience: String
+  agencyAbility: String
+  priorExperience: String
+  potentialStates: [String]
+  revenueAlignment: String
+  additionalDetails: String
+}
+
+input UpdateBusinessContactInput {
+  id: ID!
+  companyName: String
+  contactName: String
+  contactEmail: AWSEmail
+  contactPhoneNumber: String
+  billingAddress: AddressInput
+  agencyExperience: String
+  agencyAbility: String
+  priorExperience: String
+  potentialStates: [String]
+  revenueAlignment: String
+  additionalDetails: String
+}
+
+input DeleteBusinessContactInput {
+  id: ID!
+}
+
+type Mutation {
+  createBusinessContact(input: CreateBusinessContactInput!): BusinessContact
+  updateBusinessContact(input: UpdateBusinessContactInput!): BusinessContact
+  deleteBusinessContact(input: DeleteBusinessContactInput!): BusinessContact
+}
+
+type Subscription {
+  onCreateBusinessContact: BusinessContact @aws_subscribe(mutations: ["createBusinessContact"])
+  onUpdateBusinessContact: BusinessContact @aws_subscribe(mutations: ["updateBusinessContact"])
+  onDeleteBusinessContact: BusinessContact @aws_subscribe(mutations: ["deleteBusinessContact"])
+}

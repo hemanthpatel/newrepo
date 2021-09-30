@@ -1,0 +1,38 @@
+
+"""
+Address is type only.
+Address type will be embedded in each of the entities as required.
+"""
+type Address {
+  addrLine1: String
+  addrLine2: String
+  addrLine3: String
+  city: String
+  state: String
+  country: String
+  postCode: String
+  latitude: Float
+  longitude: Float
+}
+
+"""
+Describes the creation of business contact
+"""
+type BusinessContact
+  @model
+  @aws_api_key
+  {
+  id: ID!
+  companyName: String!
+  contactName: String!
+  contactEmail: AWSEmail!
+  contactPhoneNumber: String!
+  billingAddress: Address
+  agencyExperience: String
+  agencyAbility: String
+  priorExperience: String
+  potentialStates: [String]
+  revenueAlignment: String
+  additionalDetails: String
+}
+

@@ -1,0 +1,112 @@
+################################################
+# Template for Tables - BusinessContact
+################################################
+
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+
+################################################
+# Parameters
+################################################
+Parameters:
+  Application:
+    Type: String
+  Module:
+    Type: String
+  Environment:
+    Type: String
+    Default: dev2
+    Description: Environment name
+  LogLevel:
+    Type: String
+    Default: INFO
+  RetentionInDays:
+    Type: Number
+    Default: 30
+    Description: CloudWatch Logs retention period for Lambda functions
+  NodeLayerArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: Node Layer NodeDependenciesLayer ARN
+
+Globals:
+  Function:
+    Runtime: nodejs14.x
+    Handler: index.handler
+    Layers:
+      - !Ref NodeLayerArn
+    Timeout: 30
+    Tracing: Active
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        LOG_LEVEL: !Ref LogLevel
+
+################################################
+# Resources
+################################################
+Resources:
+  BusinessContactTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${Application}-${Environment}-BusinessContact
+      Tags:
+        - Key: "Environment"
+          Value: !Ref Environment
+        - Key: "Application"
+          Value: !Ref Application
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+    DeletionPolicy: Retain
+
+  ################################################
+  # Functions
+  ################################################
+  ManageBusinessContact:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${Application}-${Environment}-ManageBusinessContact-Function
+      Handler: manage_business-contact.handler
+      CodeUri: ./src
+      MemorySize: 768
+      Tags:
+        Application: !Ref Application
+        Environment: !Ref Environment
+        Module: !Ref Module
+      Environment:
+        Variables:
+          Application: !Ref Application
+          TABLE_NAME: !Ref BusinessContactTable
+          LOG_LEVEL: !Ref LogLevel
+      Policies:
+        - arn:aws:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:BatchGetItem
+                - dynamodb:BatchWriteItem
+                - dynamodb:PutItem
+                - dynamodb:DeleteItem
+                - dynamodb:GetItem
+                - dynamodb:Scan
+                - dynamodb:Query
+                - dynamodb:UpdateItem
+              Resource:
+                - !GetAtt BusinessContactTable.Arn
+
+  ManageBusinessContactLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${ManageBusinessContact}"
+      RetentionInDays: !Ref RetentionInDays
