@@ -46,7 +46,7 @@ const SuccessPage = (props) => {
               <Box> Your details have been successfully updated.</Box>
               <Box>
                 We-Team 1800Spirits, look forward to growing together. Expect us
-                to contect you soon.
+                to connect you soon.
               </Box>
             </Stack>
             <Box w="35%" h="1" bg="brand.red" roundedTopRight="md" />

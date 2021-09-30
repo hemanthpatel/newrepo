@@ -14,7 +14,7 @@ exports.handler = async function (event, context, callback) {
   try {
     switch (event.field) {
       case "createBusinessContact":
-        response = await createBusinessContact(event.body, event.identity);
+        response = await createBusinessContact(event.body);
         break;
       case "updateBusinessContact":
         response = await updateBusinessContact(event.body);
