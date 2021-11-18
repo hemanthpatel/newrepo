@@ -4,7 +4,7 @@ version = 0.1
 [dev.deploy]
 [dev.deploy.parameters]
 stack_name = "spirits-dev-businessops-businesscontact"
-s3_bucket = "spirits-dev-samdeploy"
+s3_bucket = "843219620739-spirits-dev-samdeploy"
 s3_prefix = "spirits-dev-businessops-businesscontact"
 region = "us-east-1"
 confirm_changeset = true
@@ -15,7 +15,7 @@ parameter_overrides = "Application=\"spirits\" Module=\"businessops\" Environmen
 [dev2.deploy]
 [dev2.deploy.parameters]
 stack_name = "spirits-dev2-businessops-businesscontact"
-s3_bucket = "spirits-dev-samdeploy"
+s3_bucket = "843219620739-spirits-dev-samdeploy"
 s3_prefix = "spirits-dev2-businessops-businesscontact"
 region = "us-east-1"
 confirm_changeset = true
@@ -27,7 +27,7 @@ parameter_overrides = "Application=\"spirits\" Module=\"businessops\" Environmen
 [sit.deploy]
 [sit.deploy.parameters]
 stack_name = "spirits-sit-businessops-businesscontact"
-s3_bucket = "spirits-dev-samdeploy"
+s3_bucket = "843219620739-spirits-dev-samdeploy"
 s3_prefix = "spirits-sit-businessops-businesscontact"
 region = "us-east-1"
 confirm_changeset = true
