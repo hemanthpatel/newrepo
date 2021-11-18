@@ -16,7 +16,7 @@ phases:
   pre_build:
     commands:
       - echo Installing source NPM dependencies...
-      - aws s3 cp s3://${ExportsBucket}/promotion-web-ui/${Environment}/aws-exports.js ./frontend/src
+      - aws s3 cp  s3://${ExportsBucket}/promotion-web-ui/${Environment}/aws-exports.js ./frontend/src
       - cd frontend && yarn install
       - cd ..
       # Run tests, lint scripts or any other pre-build checks.
