@@ -45,7 +45,7 @@ phases:
       - cd datasources/BusinessContact
       - cd ../BusinessContact && sam deploy -t BusinessContact.yaml --config-env ${env} --no-confirm-changeset --no-fail-on-empty-changeset
 
-      - cd ../../..
+      - cd ../../../..
       - cd frontend
 
       # copy the contents of /build to S3
