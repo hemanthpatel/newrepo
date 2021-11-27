@@ -20,15 +20,13 @@ export const ROUTE_NAMES = {
 const Routes = () => {
   return (
     <>
-      <Suspense fallback={null}>
-        <Router>
-          <PrivateRoute path={ROUTE_NAMES.MAIN} component={Main} />
-          <PrivateRoute path={ROUTE_NAMES.SUCCESS} component={Success} />
-          <PublicRoute path={ROUTE_NAMES.MERCHANT} component={Merchant} />
-          <PublicRoute path={ROUTE_NAMES.PRODUCER} component={Producer} />
-          <PublicRoute path={ROUTE_NAMES.MARKETING} component={Marketing} />
-        </Router>
-      </Suspense>
+      <Router>
+        <PrivateRoute path={ROUTE_NAMES.MAIN} component={Main} />
+        <PrivateRoute path={ROUTE_NAMES.SUCCESS} component={Success} />
+        <PublicRoute path={ROUTE_NAMES.MERCHANT} component={Merchant} />
+        <PublicRoute path={ROUTE_NAMES.PRODUCER} component={Producer} />
+        <PublicRoute path={ROUTE_NAMES.MARKETING} component={Marketing} />
+      </Router>
     </>
   );
 };
