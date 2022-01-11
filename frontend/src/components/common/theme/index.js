@@ -74,7 +74,7 @@ const theme = extendTheme({
         },
 
         "cancel-button": {
-          bg: "transparent",
+          bg: "red",
           pl: "5px",
           pr: "5px",
           fontWeight: "bold",
